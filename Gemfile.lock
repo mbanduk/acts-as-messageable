@@ -120,7 +120,7 @@ PLATFORMS
 DEPENDENCIES
   activerecord (>= 3.0.0)
   activesupport (>= 3.0.0)
-  ancestry (>= 1.3.0)
+  ancestry (>= 2.1.0)
   appraisal
   coveralls
   jeweler (~> 1.8.0)

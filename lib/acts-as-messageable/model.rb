@@ -19,7 +19,7 @@ module ActsAsMessageable
           :class_name => "ActsAsMessageable::Message",
           :required => [:topic, :body],
           :dependent => :nullify,
-          :group_messages => false,
+          :group_messages => true,
         }
         options = default_options.merge(options)
 
@@ -27,6 +27,7 @@ module ActsAsMessageable
                   :as => :received_messageable,
                   :class_name => options[:class_name],
                   :dependent => options[:dependent]
+
         has_many  :sent_messages_relation,
                   :as => :sent_messageable,
                   :class_name => options[:class_name],
@@ -96,9 +97,9 @@ module ActsAsMessageable
       # @param [String] body
       #
       # @return [ActsAsMessageable::Message] the message object
-      def send_message(to, *args)
+      def send_message(to, message_type, *args)
         message_attributes = {}
-
+        
         case args.first
           when String
             self.class.messages_class_name.required.each_with_index do |attribute, index|
@@ -107,12 +108,15 @@ module ActsAsMessageable
           when Hash
             message_attributes = args.first
         end
+        raise "Is not subclass of #{self.class.messages_class_name}: #{message_type.inspect}" if message_type.nil? || !(message_type <= self.class.messages_class_name)
 
-        message = self.class.messages_class_name.new message_attributes
+        message = message_type.new message_attributes
         message.received_messageable = to
         message.sent_messageable = self
+         
+        yield message if block_given?
+        
         message.save
-
         message
       end
 
@@ -123,8 +127,8 @@ module ActsAsMessageable
       # @param [String] body
       #
       # @return [ActsAsMessageable::Message] the message object
-      def send_message!(to, *args)
-        send_message(to, *args).save!
+      def send_message!(to, message_type, *args)
+        send_message(to, message_type, *args).save!
       end
 
       # Reply to given message
@@ -133,14 +137,13 @@ module ActsAsMessageable
       # @param [String] body
       #
       # @return [ActsAsMessageable::Message] a message that is a response to a given message
-      def reply_to(message, *args)
+      def reply_to(message, message_type, *args)
         current_user = self
-
+        
         if message.participant?(current_user)
-          reply_message = send_message(message.real_receiver(current_user), *args)
+          reply_message = send_message(message.real_receiver(current_user), message_type, *args)
           reply_message.parent = message
           reply_message.save
-
           reply_message
         end
       end
