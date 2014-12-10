@@ -19,7 +19,7 @@ module ActsAsMessageable
           :class_name => "ActsAsMessageable::Message",
           :required => [:topic, :body],
           :dependent => :nullify,
-          :group_messages => true,
+          :group_messages => false,
         }
         options = default_options.merge(options)
 
@@ -98,6 +98,8 @@ module ActsAsMessageable
       #
       # @return [ActsAsMessageable::Message] the message object
       def send_message(to, message_type, *args)
+        message_type = self.class.messages_class_name if message_type.nil?
+        raise "Is not subclass of #{self.class.messages_class_name}: #{message_type.inspect}" if message_type.nil? || !(message_type <= self.class.messages_class_name)        
         message_attributes = {}
         
         case args.first
@@ -108,7 +110,7 @@ module ActsAsMessageable
           when Hash
             message_attributes = args.first
         end
-        raise "Is not subclass of #{self.class.messages_class_name}: #{message_type.inspect}" if message_type.nil? || !(message_type <= self.class.messages_class_name)
+        
 
         message = message_type.new message_attributes
         message.received_messageable = to

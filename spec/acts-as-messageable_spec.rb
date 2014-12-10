@@ -32,12 +32,12 @@ describe "ActsAsMessageable" do
   describe "send messages with bang" do
     it "should raise exception" do
       expect {
-        @alice.send_message!(@bob, :body => "body")
+        @alice.send_message!(@bob, nil, :body => "body")
       }.to raise_error(ActiveRecord::RecordInvalid)
     end
 
     it "should return message object" do
-      @alice.send_message!(@bob, :body => "body", :topic => "topic").should
+      @alice.send_message!(@bob, nil, :body => "body", :topic => "topic").should
         be_kind_of ActsAsMessageable::Message
     end
   end
@@ -67,12 +67,12 @@ describe "ActsAsMessageable" do
   describe "reply to messages" do
 
     it "pat should not be able to reply to a message from bob to alice" do
-      @reply_message =  @pat.reply_to(@message, "Re: Topic", "Body")
+      @reply_message =  @pat.reply_to(@message, nil, "Re: Topic", "Body")
       @reply_message.should be_nil
     end
 
     it "alice should be able to reply to a message from bob to alice" do
-      @reply_message =  @alice.reply_to(@message, "Re: Topic", "Body")
+      @reply_message =  @alice.reply_to(@message, nil, "Re: Topic", "Body")
       @reply_message.should_not be_nil
       @bob.messages.are_from(@alice).count.should == 1
       @alice.sent_messages.are_to(@bob).count.should == 1
@@ -86,14 +86,14 @@ describe "ActsAsMessageable" do
     end
 
     it "bob try to add something to conversation" do
-      @reply_message = @bob.reply_to(@message, "Oh, I Forget", "1+1=2")
+      @reply_message = @bob.reply_to(@message, nil, "Oh, I Forget", "1+1=2")
       @reply_message.from.should  == @message.from
       @reply_message.to.should    == @message.to
     end
 
     it "bob try to add something to conversation and should receive proper order" do
-      @reply_message = @bob.reply_to(@message, "Oh, I Forget", "1+1=2")
-      @sec_message   = @alice.reply_to(@message, "Yeah, right", "1+1=3!")
+      @reply_message = @bob.reply_to(@message, nil, "Oh, I Forget", "1+1=2")
+      @sec_message   = @alice.reply_to(@message, nil, "Yeah, right", "1+1=3!")
 
       @message.conversation.should == [@sec_message, @reply_message, @message]
     end
@@ -200,7 +200,7 @@ describe "ActsAsMessageable" do
 
   describe "conversation" do
     it "bob send message to alice, and alice reply to bob message and show proper tree" do
-      @reply_message =  @alice.reply_to(@message, "Re: Topic", "Body")
+      @reply_message =  @alice.reply_to(@message, nil, "Re: Topic", "Body")
 
       @reply_message.conversation.size.should == 2
       @reply_message.conversation.last.topic.should == "Topic"
@@ -208,8 +208,8 @@ describe "ActsAsMessageable" do
     end
 
     it "bob send message to alice, alice answer, and bob answer for alice answer" do
-      @reply_message = @alice.reply_to(@message, "Re: Topic", "Body")
-      @reply_reply_message = @bob.reply_to(@reply_message, "Re: Re: Topic", "Body")
+      @reply_message = @alice.reply_to(@message, nil, "Re: Topic", "Body")
+      @reply_reply_message = @bob.reply_to(@reply_message, nil, "Re: Re: Topic", "Body")
 
       [@message, @reply_message, @reply_reply_message].each do |m|
         m.conversation.size.should == 3
@@ -232,7 +232,7 @@ describe "ActsAsMessageable" do
     end
 
     it "show conversations in proper order" do
-      @sec_message = @bob.send_message(@alice, "Hi", "Alice!")
+      @sec_message = @bob.send_message(@alice, nil, "Hi", "Alice!")
       @sec_reply = @sec_message.reply("Re: Hi", "Fine!")
       @bob.received_messages.conversations.map(&:id).should == [@sec_reply.id, @reply_reply_message.id]
       @sec_reply.conversation.to_a.should == [@sec_reply, @sec_message]
@@ -254,14 +254,14 @@ describe "ActsAsMessageable" do
 
   describe "send messages with hash" do
     it "send message with hash" do
-      @message = @bob.send_message(@alice, {:body => "Body", :topic => "Topic"})
+      @message = @bob.send_message(@alice, nil, {:body => "Body", :topic => "Topic"})
       @message.topic.should == "Topic"
       @message.body.should == "Body"
     end
   end
 
   it "messages should return in right order :created_at" do
-    @message = send_message(@bob, @alice, "Example", "Example Body")
+    @message = @bob.send_message(@alice, nil, "Example", "Example Body")
     @alice.messages.last.body.should == "Body"
   end
 
@@ -279,13 +279,13 @@ describe "ActsAsMessageable" do
     end
 
     it "bob send message to admin (different model) with the same id" do
-      @bob.send_message(@alice, "hello", "alice")
+      @bob.send_message(@alice, nil, "hello", "alice")
       @alice.messages.are_to(@alice).size.should be_equal(2)
       @alice.messages.are_to(@admin).size.should be_equal(0)
     end
 
     it "admin send message to bob" do
-      @admin.send_message(@bob, "hello", "bob")
+      @admin.send_message(@bob, nil, "hello", "bob")
       @bob.messages.are_from(@admin).size.should be_equal(1)
       @bob.messages.are_from(@alice).size.should be_equal(0)
     end

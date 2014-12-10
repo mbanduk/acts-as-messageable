@@ -48,7 +48,7 @@ def create_database
       t.boolean :recipient_permanent_delete, :default => false
       t.boolean :sender_permanent_delete, :default => false
       t.string :ancestry
-      t.timestamps
+      t.timestamps null: false
     end
 
     create_table :custom_messages do |t|
@@ -62,7 +62,7 @@ def create_database
       t.boolean :recipient_permanent_delete, :default => false
       t.boolean :sender_permanent_delete, :default => false
       t.string :ancestry
-      t.timestamps
+      t.timestamps null: false
     end
     create_table :users do |t|
       t.string :email

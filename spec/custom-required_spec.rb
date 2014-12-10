@@ -23,27 +23,27 @@ describe "custom require" do
     end
 
     it "alice should able to send message to bob only with body" do
-      @alice.send_message(@bob, "Hello bob!")
+      @alice.send_message(@bob, nil, "Hello bob!")
       @alice.messages.first.body.should == "Hello bob!"
       @bob.received_messages.first.body.should == "Hello bob!"
     end
 
     it "alice should able to send message to bob with hash" do
-      @alice.send_message(@bob, :body => "Hi Bob! I'm hash master")
+      @alice.send_message(@bob, nil, :body => "Hi Bob! I'm hash master")
       @alice.messages.first.body.should == "Hi Bob! I'm hash master"
     end
 
     it "alice send message to bob with body and bob reply to alice" do
-      @alice.send_message(@bob, "Hi Bob!")
+      @alice.send_message(@bob, nil, "Hi Bob!")
       @message_from_alice = @bob.received_messages.first
       @message_from_alice.body.should == "Hi Bob!"
-      @bob.reply_to(@message_from_alice, "Hi Alice!")
+      @bob.reply_to(@message_from_alice, nil, "Hi Alice!")
       @alice.received_messages.first.body.should == "Hi Alice!"
     end
 
     it "alice send message to bob and bob reply with hash" do
-      @message_from_alice = @alice.send_message(@bob, "Hi Bob!")
-      @bob.reply_to(@message_from_alice, :body => "Hi Alice!")
+      @message_from_alice = @alice.send_message(@bob, nil, "Hi Bob!")
+      @bob.reply_to(@message_from_alice, nil, :body => "Hi Alice!")
       @alice.received_messages.first.body.should == "Hi Alice!"
     end
   end

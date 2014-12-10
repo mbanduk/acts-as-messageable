@@ -10,7 +10,7 @@ describe "custom class" do
 
   before do
     User.acts_as_messageable :class_name => "CustomMessage", :table_name => "custom_messages"
-    @message = alice.send_message(bob, :topic => "Helou bob!", :body => "What's up?")
+    @message = alice.send_message(bob, nil, :topic => "Helou bob!", :body => "What's up?")
   end
 
   after { User.acts_as_messageable }
